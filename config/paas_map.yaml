@@ -1,0 +1,34 @@
+apiVersion: paas.shcp/v1
+kind: PaasMap
+
+# Mapa declarativo de PaaS e serviços gerenciados: para cada controle, o destino já está
+# decidido antes do problema aparecer.
+#   AUTO   -> o remediate corrige, confere de novo e marca VERIFIED
+#   MANUAL -> fica para revisão humana, com motivo e runbook
+# EXCEPTION não se declara aqui: vem da tag de exceção no próprio recurso.
+#
+# Regra do módulo: nada é apagado. Toda mudança fica registrada em `changes`, com o antes.
+
+# Escopo: QUEM o módulo pode tocar. Por segurança, o padrão são só os recursos
+# do laboratório (scripts/99_paas_lab_setup.py), com TODAS as tags abaixo.
+# A service role entra pelo escopo das tags dela, não do projeto que a usa.
+#   mode: tagged -> só recursos com as tags de `tag` (padrão)
+#   mode: all    -> todos os recursos da região. Use com calma:
+#                   rode o dry-run e leia o plano antes de qualquer apply.
+targets:
+  mode: tagged
+  tag:
+    ps-lab: "true"
+
+# Um recurso com esta tag não é corrigido, mas também não é ignorado: vira
+# EXCEPTION no plano, com justificativa (valor da tag) e dono (tag de dono).
+# Exceção sem dono volta para MANUAL.
+exception:
+  tag_key: ps-exception
+  owner_tag_key: exception-owner
+
+# Um arquivo por controle em config/controls/. Para adicionar um controle,
+# crie config/controls/PS.N.yaml; o scan e o plan leem todos automaticamente.
+# Para desligar um controle sem apagar o arquivo, use `enabled: false` nele.
+include:
+  - controls/*.yaml

@@ -1,0 +1,9 @@
+id: PS.6
+title: "Service role sem AdministratorAccess nem Allow * em *"
+decision: MANUAL
+severity: HIGH
+reason: "Tirar o admin da service role pode parar o pipeline. Use o último acesso por serviço (Access Advisor) para escrever a política mínima e troque com o dono"
+runbook: "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_last-accessed.html"
+mitre:
+  - T1078.004  # Valid Accounts: Cloud Accounts
+  - T1098      # Account Manipulation

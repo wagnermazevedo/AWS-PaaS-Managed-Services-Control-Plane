@@ -1,0 +1,45 @@
+
+---
+
+# 📕 MANUAL.md
+
+```md
+# **Manual — IAM & Identity as Control Plane**
+
+This manual explains **how to safely operate** the repository in **production AWS environments**.
+
+---
+
+## 🧠 **1. Operating Model**
+
+This framework enforces a strict contract:
+
+1. **Scan** → *Observe*
+2. **Plan** → *Decide*
+3. **Remediate** → *Act (safely)*
+
+Each step produces **versioned, auditable outputs**.
+
+---
+
+## 🔐 **2. Permissions Model**
+
+### **Scan-only**
+- Read-only IAM
+- Policy simulation
+- Credential report access
+
+### **Remediation**
+- Explicit, scoped permissions
+- No wildcard destructive actions
+
+> **Principle:**  
+> *No remediation without an explicit plan and an explicit flag.*
+
+---
+
+## ▶️ **3. Running the Scripts**
+
+### **Minimal Scan (IAM only)**
+```bash
+python 00_identity_scan.py --profile default --out outputs

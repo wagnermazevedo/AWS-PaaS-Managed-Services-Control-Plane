@@ -1,0 +1,10 @@
+id: PS.4
+title: "Notebook do SageMaker sem root e sem internet direta"
+decision: MANUAL
+securityhub_id: SageMaker.1   # internet direta; o root é o SageMaker.3
+severity: HIGH
+reason: "Trocar RootAccess e DirectInternetAccess exige parar o notebook (e, para a internet, colocá-lo numa VPC com NAT ou endpoints). Combine a janela com o time de dados"
+runbook: "https://docs.aws.amazon.com/sagemaker/latest/dg/appendix-notebook-and-internet-access.html"
+mitre:
+  - T1190      # Exploit Public-Facing Application
+  - T1068      # Exploitation for Privilege Escalation

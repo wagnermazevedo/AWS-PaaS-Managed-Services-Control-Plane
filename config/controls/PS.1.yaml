@@ -1,0 +1,9 @@
+id: PS.1
+title: "Projeto do CodeBuild sem modo privilegiado"
+decision: MANUAL
+securityhub_id: CodeBuild.5
+severity: HIGH
+reason: "O modo privilegiado existe para construir imagem Docker. Desligar sem saber quebra o build: confirme com o dono, use exceção com dono para quem precisa, ou troque por um builder sem daemon (kaniko, buildah)"
+runbook: "https://docs.aws.amazon.com/codebuild/latest/userguide/change-project-console.html#change-project-console-environment"
+mitre:
+  - T1611      # Escape to Host

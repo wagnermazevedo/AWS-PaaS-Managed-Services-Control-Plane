@@ -1,0 +1,11 @@
+id: PS.3
+title: "Projeto do CodeBuild com logs de build"
+decision: AUTO
+action: codebuild_enable_logs
+securityhub_id: CodeBuild.4
+severity: MEDIUM
+params:
+  retention_days: 90
+note: "Liga o CloudWatch Logs no grupo /aws/codebuild/<projeto>. Log é o que o ep. 9 vai precisar."
+mitre:
+  - T1562.008  # Impair Defenses: Disable Cloud Logs
