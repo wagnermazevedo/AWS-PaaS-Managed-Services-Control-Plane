@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" width="1100" height="700" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+<title>AWS PaaS &amp; Managed Services Control Plane: a topologia</title>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4b5563"/></marker></defs>
+<rect x="0" y="0" width="1100" height="700" rx="16" fill="#ffffff"/>
+<text x="32" y="44" font-size="22" font-weight="700" fill="#111827">AWS PaaS &amp; Managed Services Control Plane: a topologia</text>
+<text x="32" y="70" font-size="14" fill="#4b5563">Com qual role o droide roda? O que ele carrega no bolso? Ele está exposto? Só nos recursos com a tag ps-lab=true</text>
+<rect x="32" y="92" width="1036" height="64" rx="10" fill="#f4f0fd" stroke="#7b5cd6" stroke-width="1.6"/>
+<text x="46" y="116" font-size="14.5" font-weight="700" fill="#3d2a7a">AWS CloudShell  ·  conta de testes  ·  sempre a partir do $HOME (cd ~)</text>
+<text x="46" y="140" font-size="12" fill="#374151" font-family="ui-monospace, Menlo, Consolas, monospace">99  →  00_paas_scan.py --region us-east-1  →  01  →  02 --mode dry-run | apply  →  99 --destroy</text>
+<path d="M550,156 L550,186" stroke="#4b5563" stroke-width="1.8" marker-end="url(#ah)"/>
+<rect x="32" y="186" width="1036" height="420" rx="14" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="48" y="210" font-size="13" font-weight="700" fill="#374151" letter-spacing="0.4">CONTA AWS  ·  us-east-1  ·  stack ps-control-plane-lab (custo zero)</text>
+<g font-size="12.5" fill="#374151">
+<rect x="56" y="226" width="320" height="176" rx="10" fill="#fff" stroke="#c0392b" stroke-width="1.4"/>
+<text x="70" y="250" font-size="14" font-weight="700" fill="#7f1d1d">Com qual role o droide roda?</text>
+<text x="70" y="274">PS.6 · ps-lab-r2d2 com AdministratorAccess</text>
+<text x="70" y="292">       (MANUAL: o R2-D2 abre todas as portas)</text>
+<text x="70" y="314">PS.7 · trust sem aws:SourceAccount</text>
+<text x="70" y="332">       AUTO: só aceita o serviço desta conta</text>
+<text x="70" y="354">ps-lab-c3po: política mínima, trust certa</text>
+<text x="70" y="390" fill="#6b7280">O droide de protocolo que obedece qualquer um</text>
+<rect x="392" y="226" width="320" height="176" rx="10" fill="#fff" stroke="#c98a0b" stroke-width="1.4"/>
+<text x="406" y="250" font-size="14" font-weight="700" fill="#6b4405">O que ele carrega no bolso?</text>
+<text x="406" y="274">ps-lab-droid-factory (CodeBuild):</text>
+<text x="406" y="294">PS.1 · modo privilegiado (MANUAL)</text>
+<text x="406" y="314">PS.2 · DB_PASSWORD em texto puro (AUTO:</text>
+<text x="406" y="332">       Parameter Store, SecureString)</text>
+<text x="406" y="352">PS.3 · sem log de build (AUTO: CloudWatch)</text>
+<text x="406" y="390" fill="#6b7280">EXCEPTION · ps-lab-k2so (platform-team)</text>
+<rect x="728" y="226" width="316" height="176" rx="10" fill="#fff" stroke="#3b6fd8" stroke-width="1.4"/>
+<text x="742" y="250" font-size="14" font-weight="700" fill="#1e3a7a">Ele está exposto?</text>
+<text x="742" y="274">PS.4 · notebook do SageMaker com root</text>
+<text x="742" y="292">       e internet direta (MANUAL)</text>
+<text x="742" y="314">PS.5 · RDS com acesso público</text>
+<text x="742" y="332">       (AUTO: PubliclyAccessible=false)</text>
+<text x="742" y="390" fill="#6b7280">Só nos testes offline: cobram por hora</text>
+</g>
+<rect x="56" y="422" width="988" height="164" rx="10" fill="#eef4ff" stroke="#3b6fd8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<g font-size="13" fill="#374151">
+<text x="72" y="448" font-weight="700" fill="#1e3a7a">Como o PS.2 tira a senha do bolso do droide</text>
+<text x="72" y="474">1. ssm:PutParameter /ps-control-plane/ps-lab-droid-factory/DB_PASSWORD (SecureString, tag ManagedBy)</text>
+<text x="72" y="496">2. iam:PutRolePolicy ps-control-plane-access na ps-lab-c3po: ssm:GetParameters só naquele caminho</text>
+<text x="72" y="518">3. codebuild:UpdateProject: a variável vira PARAMETER_STORE, apontando para o parâmetro</text>
+<text x="72" y="548" fill="#6b7280">O valor nunca vai para o scan, o plano, o resultado ou a tela. Role fora do escopo: REFUSED antes de qualquer escrita.</text>
+<text x="72" y="570" fill="#6b7280">Boundary ps-lab-boundary nas roles do lab: o "admin" só escreve log de build e lê os parâmetros do módulo.</text>
+</g>
+<text x="32" y="640" font-size="13" fill="#374151">"Todo droide trabalha para alguém. Descubra para quem, e com qual chave."</text>
+<text x="32" y="664" font-size="12" fill="#6b7280">Nada é apagado: toda mudança guarda o antes em changes, no paas_remediation_results.json.</text>
+</svg>

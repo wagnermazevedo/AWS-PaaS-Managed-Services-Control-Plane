@@ -1,0 +1,8 @@
+outputs/*
+!outputs/.gitkeep
+reports/*
+!reports/.gitkeep
+remediation_plan.yaml
+__pycache__/
+*.pyc
+outputs/.mask-key

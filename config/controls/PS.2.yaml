@@ -1,0 +1,12 @@
+id: PS.2
+title: "Projeto do CodeBuild sem segredo em texto puro na variável de ambiente"
+decision: AUTO
+action: codebuild_secret_to_ssm
+securityhub_id: CodeBuild.2
+severity: CRITICAL
+params:
+  # Nome da variável (sem diferenciar maiúscula). Valor com cara de access key (AKIA/ASIA) também conta.
+  name_patterns: ["*PASSWORD*", "*PASSWD*", "*SECRET*", "*TOKEN*", "*API_KEY*", "*APIKEY*", "*ACCESS_KEY*", "*PRIVATE_KEY*"]
+note: "O valor vai para o Parameter Store (SecureString) e nunca aparece no scan, no plano ou na tela. A service role precisa estar no escopo para ganhar ssm:GetParameters."
+mitre:
+  - T1552.001  # Unsecured Credentials: Credentials In Files

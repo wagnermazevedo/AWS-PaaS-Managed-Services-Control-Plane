@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  AWS PaaS & Managed Services Control Plane - laboratório INSEGURO de propósito (stack ps-control-plane-lab).
+  Use SOMENTE numa conta de testes. Tudo leva a tag ps-lab=true. Custo zero: projeto do CodeBuild
+  parado e role do IAM não cobram. Notebook do SageMaker e RDS ficam de fora (cobram por hora).
+
+Resources:
+  # O teto do lab: mesmo com AdministratorAccess na política, as roles do lab só conseguem escrever
+  # log de build e ler os parâmetros do módulo. É o que deixa o R2-D2 "admin" sem risco de verdade.
+  LabBoundary:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: ps-lab-boundary
+      Description: Boundary do laboratorio do ep. 8 (so log de build e parametros do modulo)
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: BuildLogs
+            Effect: Allow
+            Action: ["logs:CreateLogStream", "logs:PutLogEvents"]
+            Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/ps-lab-*"
+          - Sid: ModuleParameters
+            Effect: Allow
+            Action: ["ssm:GetParameters"]
+            Resource: !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/ps-control-plane/*"
+
+  # PS.6 e PS.7: o R2-D2 tem acesso a tudo da nave, e a trust não pergunta de que conta vem a ordem.
+  R2D2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ps-lab-r2d2
+      Description: Service role com admin e sem aws:SourceAccount (PS.6 e PS.7)
+      PermissionsBoundary: !Ref LabBoundary
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: {Service: codebuild.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess"
+      Tags:
+        - {Key: ps-lab, Value: "true"}
+        - {Key: Environment, Value: lab}
+
+  # O C-3PO faz tudo certo: política mínima e trust com aws:SourceAccount. É a role dos projetos.
+  C3POServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ps-lab-c3po
+      Description: Service role minima, com aws:SourceAccount (passa no PS.6 e no PS.7)
+      PermissionsBoundary: !Ref LabBoundary
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: {Service: codebuild.amazonaws.com}
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+      Policies:
+        - PolicyName: ps-lab-c3po-minimal
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: ["logs:CreateLogStream", "logs:PutLogEvents"]
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/ps-lab-bb8:*"
+      Tags:
+        - {Key: ps-lab, Value: "true"}
+        - {Key: Environment, Value: lab}
+
+  # PS.1, PS.2 e PS.3: a fábrica de droides roda privilegiada, com a senha no bolso e sem gravar nada.
+  DroidFactory:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: ps-lab-droid-factory
+      Description: Modo privilegiado, senha em texto puro e sem logs (PS.1, PS.2 e PS.3)
+      ServiceRole: !GetAtt C3POServiceRole.Arn
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: "version: 0.2\nphases:\n  build:\n    commands:\n      - echo 'beep boop'\n"
+      Artifacts: {Type: NO_ARTIFACTS}
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        PrivilegedMode: true
+        EnvironmentVariables:
+          - {Name: DB_PASSWORD, Type: PLAINTEXT, Value: lab-not-a-real-password}
+          - {Name: APP_ENV, Type: PLAINTEXT, Value: lab}
+      LogsConfig:
+        CloudWatchLogs: {Status: DISABLED}
+      Tags:
+        - {Key: ps-lab, Value: "true"}
+        - {Key: Environment, Value: lab}
+
+  # O BB-8 faz tudo certo (e usa o R2-D2, para o lab ter uma service role com admin "em uso").
+  BB8:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: ps-lab-bb8
+      Description: Projeto conforme (passa no PS.1, PS.2 e PS.3)
+      ServiceRole: !GetAtt R2D2Role.Arn
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: "version: 0.2\nphases:\n  build:\n    commands:\n      - echo 'bwee'\n"
+      Artifacts: {Type: NO_ARTIFACTS}
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        PrivilegedMode: false
+      Tags:
+        - {Key: ps-lab, Value: "true"}
+        - {Key: Environment, Value: lab}
+
+  # O K-2SO: privilegiado de propósito, porque constrói imagem Docker. Exceção com dono.
+  K2SO:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: ps-lab-k2so
+      Description: Modo privilegiado com excecao e dono (EXCEPTION no PS.1)
+      ServiceRole: !GetAtt C3POServiceRole.Arn
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: "version: 0.2\nphases:\n  build:\n    commands:\n      - echo 'I have a bad feeling about this'\n"
+      Artifacts: {Type: NO_ARTIFACTS}
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:5.0
+        PrivilegedMode: true
+      Tags:
+        - {Key: ps-lab, Value: "true"}
+        - {Key: Environment, Value: lab}
+        - {Key: ps-exception, Value: "Constroi imagens Docker; migracao para kaniko no proximo trimestre"}
+        - {Key: exception-owner, Value: platform-team}
+
+Outputs:
+  Projects:
+    Value: "ps-lab-droid-factory, ps-lab-bb8, ps-lab-k2so"
+  Roles:
+    Value: "ps-lab-r2d2, ps-lab-c3po"

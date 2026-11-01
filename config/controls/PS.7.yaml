@@ -1,0 +1,15 @@
+id: PS.7
+title: "Service role protegida contra confused deputy (aws:SourceAccount ou aws:SourceArn)"
+decision: AUTO
+action: role_trust_source_account
+severity: MEDIUM
+params:
+  # Serviços para os quais a AWS recomenda aws:SourceAccount / aws:SourceArn na trust policy.
+  # Role de outros serviços (ex.: ec2, lambda) fica NOT_APPLICABLE.
+  services: [codebuild.amazonaws.com, sagemaker.amazonaws.com, codepipeline.amazonaws.com, codedeploy.amazonaws.com,
+             glue.amazonaws.com, states.amazonaws.com, events.amazonaws.com, scheduler.amazonaws.com,
+             config.amazonaws.com, cloudformation.amazonaws.com]
+note: "Acrescenta aws:SourceAccount = esta conta. Quem usa a role nesta conta continua usando."
+runbook: "https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html"
+mitre:
+  - T1199      # Trusted Relationship

@@ -1,0 +1,9 @@
+id: PS.5
+title: "Banco do RDS sem acesso público"
+decision: AUTO
+action: rds_disable_public
+securityhub_id: RDS.2
+severity: CRITICAL
+note: "PubliclyAccessible=false com ApplyImmediately. Quem acessava pela internet passa a entrar pela VPC (Session Manager, ep. 7). Leva alguns minutos para refletir."
+mitre:
+  - T1190      # Exploit Public-Facing Application
