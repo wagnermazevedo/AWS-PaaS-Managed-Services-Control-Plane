@@ -1,5 +1,7 @@
 # AWS PaaS & Managed Services Control Plane
 
+**Youtube Link:** &lt;incluir URL&gt;
+
 <p align="center">
   <a href="#-português">Português</a> •
   <a href="#-english">English</a>
